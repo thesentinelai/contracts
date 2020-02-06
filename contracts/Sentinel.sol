@@ -61,7 +61,7 @@ contract Sentinel {
     mapping (address => uint256[]) public UserTaskIDs;
     mapping (address => string[]) public UserFiles;
 
-    event newTaskCreated(uint256 indexed taskID, address indexed _user, uint256 _amt, uint256 _time);
+    event newTaskCreated(uint256 indexed taskID, address indexed _user, string _modelHash, uint256 _amt, uint256 _time);
     event modelUpdated(uint256 indexed taskID, string _modelHash, uint256 _time);
     event fileAdded(address indexed _user, string _fileHash, uint256 _time);
 
@@ -81,7 +81,7 @@ contract Sentinel {
         newTask.modelHashes[0] = _modelHash;
         SentinelTasks[nextTaskID] = newTask;
         UserTaskIDs[msg.sender].push(nextTaskID);
-        emit newTaskCreated(nextTaskID, msg.sender, taskCost, now);
+        emit newTaskCreated(nextTaskID, msg.sender, _modelHash, taskCost, now);
 
         nextTaskID = nextTaskID.add(1);
     }
