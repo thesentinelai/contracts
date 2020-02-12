@@ -55,6 +55,8 @@ contract Sentinel {
         uint256 cost;
         string[] modelHashes;
     }
+    
+    address coordinatorAddress = 0xBeb71662FF9c08aFeF3866f85A6591D4aeBE6e4E;
 
     uint256 nextTaskID = 1;
     mapping (uint256 => Task) public SentinelTasks;
@@ -86,14 +88,16 @@ contract Sentinel {
         nextTaskID = nextTaskID.add(1);
     }
 
-    function updateModelForTask(uint256 _taskID,  string memory _modelHash) public {
+    function updateModelForTask(uint256 _taskID,  string memory _modelHash, address payable computer) public {
+        require(msg.sender == coordinatorAddress, "You are not the coordinator !");
         require(_taskID <= nextTaskID, "Invalid Task ID");
         uint256 newRound = SentinelTasks[_taskID].currentRound.add(1);
         require(newRound <= SentinelTasks[_taskID].totalRounds, "All Rounds Completed");
+        
 
         SentinelTasks[_taskID].currentRound = newRound;
         SentinelTasks[_taskID].modelHashes[newRound.sub(1)] = _modelHash;
-        address(msg.sender).transfer(SentinelTasks[_taskID].cost.div(SentinelTasks[_taskID].totalRounds));
+        address(computer).transfer(SentinelTasks[_taskID].cost.div(SentinelTasks[_taskID].totalRounds));
         emit modelUpdated(_taskID, _modelHash, now);
 
     }
