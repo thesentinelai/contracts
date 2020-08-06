@@ -1,0 +1,30 @@
+{
+  "name": "dstream-contractsv2",
+  "version": "1.0.0",
+  "description": "",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "clean": "rm -rf build",
+    "migrate": "npm run clean & npm run migrate:deploy",
+    "migrate:deploy": "truffle migrate",
+    "migrate-prod": "npm run clean & npm run migrate-prod:deploy",
+    "migrate-prod:deploy": "truffle migrate --network matic"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dstream/contractsV2.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dstream/contractsV2/issues"
+  },
+  "homepage": "https://github.com/dstream/contractsV2#readme",
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "truffle-hdwallet-provider": "^1.0.17",
+    "web3": "^1.2.11"
+  }
+}

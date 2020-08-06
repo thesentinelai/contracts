@@ -1,4 +1,15 @@
-pragma solidity 0.5.16;
+/*
+   _____            _   _            _            _____
+  / ____|          | | (_)          | |     /\   |_   _|
+ | (___   ___ _ __ | |_ _ _ __   ___| |    /  \    | |
+  \___ \ / _ \ '_ \| __| | '_ \ / _ \ |   / /\ \   | |
+  ____) |  __/ | | | |_| | | | |  __/ |_ / ____ \ _| |_
+ |_____/ \___|_| |_|\__|_|_| |_|\___|_(_)_/    \_\_____|
+
+*/
+
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <0.8.0;
 pragma experimental ABIEncoderV2;
 
 library SafeMath {
@@ -55,8 +66,9 @@ contract Sentinel {
         uint256 cost;
         string[] modelHashes;
     }
-    
-    address coordinatorAddress = 0xBeb71662FF9c08aFeF3866f85A6591D4aeBE6e4E;
+
+    address owner;
+    address coordinatorAddress;
 
     uint256 nextTaskID = 1;
     mapping (uint256 => Task) public SentinelTasks;
@@ -67,8 +79,29 @@ contract Sentinel {
     event modelUpdated(uint256 indexed taskID, string _modelHash, uint256 _time);
     event fileAdded(address indexed _user, string _fileHash, uint256 _time);
 
+    modifier onlyOwner () {
+      require(msg.sender == owner);
+      _;
+    }
+    modifier onlyCoordinator () {
+      require(msg.sender == coordinatorAddress);
+      _;
+    }
 
-    function createTask(string memory _modelHash, uint256 _rounds) public payable {
+     constructor(address _coordinatorAddress) {
+        owner = msg.sender;
+        coordinatorAddress = _coordinatorAddress;
+    }
+
+    function updateCoordinator(address _coordinatorAddress)
+        public onlyOwner
+    {
+        coordinatorAddress = _coordinatorAddress;
+    }
+
+    function createTask(string memory _modelHash, uint256 _rounds)
+        public payable
+    {
         require(_rounds < 10, "Number of Rounds should be less than 10");
         uint256 taskCost = msg.value;
 
@@ -83,22 +116,23 @@ contract Sentinel {
         newTask.modelHashes[0] = _modelHash;
         SentinelTasks[nextTaskID] = newTask;
         UserTaskIDs[msg.sender].push(nextTaskID);
-        emit newTaskCreated(nextTaskID, msg.sender, _modelHash, taskCost, now);
+        emit newTaskCreated(nextTaskID, msg.sender, _modelHash, taskCost, block.timestamp);
 
         nextTaskID = nextTaskID.add(1);
     }
 
-    function updateModelForTask(uint256 _taskID,  string memory _modelHash, address payable computer) public {
-        require(msg.sender == coordinatorAddress, "You are not the coordinator !");
+    function updateModelForTask(uint256 _taskID,  string memory _modelHash, address payable computer)
+        public onlyCoordinator
+    {
         require(_taskID <= nextTaskID, "Invalid Task ID");
         uint256 newRound = SentinelTasks[_taskID].currentRound.add(1);
         require(newRound <= SentinelTasks[_taskID].totalRounds, "All Rounds Completed");
-        
+
 
         SentinelTasks[_taskID].currentRound = newRound;
         SentinelTasks[_taskID].modelHashes[newRound.sub(1)] = _modelHash;
-        address(computer).transfer(SentinelTasks[_taskID].cost.div(SentinelTasks[_taskID].totalRounds));
-        emit modelUpdated(_taskID, _modelHash, now);
+        computer.transfer(SentinelTasks[_taskID].cost.div(SentinelTasks[_taskID].totalRounds));
+        emit modelUpdated(_taskID, _modelHash, block.timestamp);
 
     }
 
@@ -115,7 +149,7 @@ contract Sentinel {
 
     function storeFile(string memory _fileHash) public {
         UserFiles[msg.sender].push(_fileHash);
-        emit fileAdded(msg.sender, _fileHash, now);
+        emit fileAdded(msg.sender, _fileHash, block.timestamp);
     }
 
     function getFiles() public view returns (string[] memory){
