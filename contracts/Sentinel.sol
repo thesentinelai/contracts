@@ -1,12 +1,12 @@
 /*
-   _____            _   _            _            _____
+   _____            _   _            _            _____ 
   / ____|          | | (_)          | |     /\   |_   _|
- | (___   ___ _ __ | |_ _ _ __   ___| |    /  \    | |
-  \___ \ / _ \ '_ \| __| | '_ \ / _ \ |   / /\ \   | |
-  ____) |  __/ | | | |_| | | | |  __/ |_ / ____ \ _| |_
+ | (___   ___ _ __ | |_ _ _ __   ___| |    /  \    | |  
+  \___ \ / _ \ '_ \| __| | '_ \ / _ \ |   / /\ \   | |  
+  ____) |  __/ | | | |_| | | | |  __/ |_ / ____ \ _| |_ 
  |_____/ \___|_| |_|\__|_|_| |_|\___|_(_)_/    \_\_____|
-
-*/
+                                                        
+*/                                                      
 
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.8.0;
@@ -66,9 +66,9 @@ contract Sentinel {
         uint256 cost;
         string[] modelHashes;
     }
-
-    address owner;
-    address coordinatorAddress;
+    
+    address public owner;
+    address public coordinatorAddress = 0xBeb71662FF9c08aFeF3866f85A6591D4aeBE6e4E;
 
     uint256 nextTaskID = 1;
     mapping (uint256 => Task) public SentinelTasks;
@@ -87,20 +87,20 @@ contract Sentinel {
       require(msg.sender == coordinatorAddress);
       _;
     }
-
+    
      constructor(address _coordinatorAddress) {
         owner = msg.sender;
         coordinatorAddress = _coordinatorAddress;
     }
-
-    function updateCoordinator(address _coordinatorAddress)
+    
+    function updateCoordinator(address _coordinatorAddress) 
         public onlyOwner
     {
         coordinatorAddress = _coordinatorAddress;
     }
 
-    function createTask(string memory _modelHash, uint256 _rounds)
-        public payable
+    function createTask(string memory _modelHash, uint256 _rounds) 
+        public payable 
     {
         require(_rounds < 10, "Number of Rounds should be less than 10");
         uint256 taskCost = msg.value;
@@ -121,13 +121,13 @@ contract Sentinel {
         nextTaskID = nextTaskID.add(1);
     }
 
-    function updateModelForTask(uint256 _taskID,  string memory _modelHash, address payable computer)
+    function updateModelForTask(uint256 _taskID,  string memory _modelHash, address payable computer) 
         public onlyCoordinator
     {
         require(_taskID <= nextTaskID, "Invalid Task ID");
         uint256 newRound = SentinelTasks[_taskID].currentRound.add(1);
         require(newRound <= SentinelTasks[_taskID].totalRounds, "All Rounds Completed");
-
+        
 
         SentinelTasks[_taskID].currentRound = newRound;
         SentinelTasks[_taskID].modelHashes[newRound.sub(1)] = _modelHash;
